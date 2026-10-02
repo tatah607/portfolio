@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 132" width="120" height="79">
+  <defs>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&amp;display=swap');
+    </style>
+  </defs>
+  <!-- Outer ellipse with slight shadow for depth -->
+  <ellipse cx="100" cy="68" rx="97" ry="62" fill="#0d5f2a" opacity="0.3"/>
+  <!-- Main green oval -->
+  <ellipse cx="100" cy="65" rx="97" ry="62" fill="#107433"/>
+  <!-- pico wordmark -->
+  <text
+    x="100"
+    y="91"
+    text-anchor="middle"
+    font-family="'Fredoka One', 'Signika', 'Nunito', Arial, sans-serif"
+    font-size="68"
+    font-weight="400"
+    fill="#ffffff"
+    letter-spacing="-1"
+  >pico</text>
+</svg>

@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>iOS App Redesign — A/B Test Results</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #e8e4dc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 32px;
+        }
+
+        .slide {
+            background: #eeeae3;
+            width: 100%;
+            max-width: 1100px;
+            aspect-ratio: 16/9;
+            border-radius: 6px;
+            padding: 44px 52px 32px;
+            display: flex;
+            flex-direction: column;
+            gap: 28px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+        }
+
+        /* Title */
+        .slide-title {
+            font-size: 30px;
+            font-weight: 800;
+            color: #1a1a1a;
+            line-height: 1.15;
+        }
+
+        .slide-title span {
+            color: #3a6b4a;
+        }
+
+        /* Card grid */
+        .card-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            flex: 1;
+        }
+
+        /* Card */
+        .card {
+            background: #ffffff;
+            border-radius: 4px;
+            border-top: 5px solid #3a6b4a;
+            padding: 24px 28px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .card-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: #3a6b4a;
+            line-height: 1.3;
+        }
+
+        .card-title .num {
+            font-size: 13px;
+            font-weight: 700;
+            margin-right: 2px;
+        }
+
+        /* Bullet list */
+        .bullet-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .bullet-list li {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            font-size: 12.5px;
+            color: #2a2a2a;
+            line-height: 1.45;
+        }
+
+        .bullet-list li::before {
+            content: '';
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #3a6b4a;
+            flex-shrink: 0;
+            margin-top: 5px;
+        }
+
+        .bullet-list li strong { font-weight: 700; }
+
+        /* Sub-bullets */
+        .sub-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+            margin-top: 4px;
+            padding-left: 4px;
+        }
+
+        .sub-list li {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            font-size: 12px;
+            color: #3a3a3a;
+            line-height: 1.4;
+        }
+
+        .sub-list li::before {
+            content: '';
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            border: 1.5px solid #3a6b4a;
+            background: transparent;
+            flex-shrink: 0;
+            margin-top: 5px;
+        }
+
+        /* Highlight badge */
+        .badge {
+            display: inline-block;
+            background: #e8f2ec;
+            color: #2d5a3d;
+            font-size: 10.5px;
+            font-weight: 700;
+            padding: 3px 10px;
+            border-radius: 20px;
+            border: 1px solid #b8d9c4;
+            align-self: flex-start;
+        }
+
+        /* Footer */
+        .slide-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 10px;
+            color: #888;
+            border-top: 1px solid #d4cfc6;
+            padding-top: 10px;
+        }
+
+        .progress-bar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .progress-track {
+            width: 100px;
+            height: 3px;
+            background: #ccc;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 57%;
+            background: #3a6b4a;
+            border-radius: 2px;
+        }
+    </style>
+</head>
+<body>
+<div class="slide">
+
+    <div class="slide-title">A/B Test Results: <span>New iOS App</span> — Day 8 of 14</div>
+
+    <div class="card-grid">
+
+        <!-- Card 1: What we tested -->
+        <div class="card">
+            <div class="card-title">What we tested</div>
+            <ul class="bullet-list">
+                <li>New product cards with direct add-to-cart basket icon</li>
+                <li>Redesigned homescreen with personalised recommendation blocks (Discovery)</li>
+                <li>Order tracking bottom sheet &amp; new onboarding flow</li>
+                <li>50/50 split · 804 Baseline vs 752 Variant A users · iOS only</li>
+            </ul>
+            <span class="badge">Safety-net test — ship if nothing breaks</span>
+        </div>
+
+        <!-- Card 2: Results -->
+        <div class="card">
+            <div class="card-title">Results</div>
+            <ul class="bullet-list">
+                <li><strong>+22% Conversion Rate</strong> — 21.94% vs 17.91%
+                    <ul class="sub-list">
+                        <li>Statistically significant · p = 0.047 · reached Day 8</li>
+                    </ul>
+                </li>
+                <li><strong>+12% Revenue per user</strong> — CHF 42.32 vs CHF 37.75</li>
+                <li><strong>+31% Discovery add-to-carts</strong> — recommendation blocks working · 89 vs 68 users</li>
+                <li><strong>Add-to-cart user rate +5.3%</strong> — 46% vs 43% of users added to cart
+                    <ul class="sub-list">
+                        <li>Firebase: p = 0.197 · directional, not yet significant · BQ total ATC/user flat</li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Card 3: Guardrails -->
+        <div class="card">
+            <div class="card-title">Guardrails — zero breaches in 8 days</div>
+            <ul class="bullet-list">
+                <li>CR 21.94% — well above 20.5% stop threshold</li>
+                <li>Revenue/user CHF 42.32 — well above CHF 22 stop threshold</li>
+                <li>Variant A CR above Baseline every single day</li>
+                <li>Baseline AOV elevated by large individual orders — Variant A AOV stable at CHF 193</li>
+            </ul>
+            <div style="font-size:10px; color:#888; margin-top:4px;">Data: BigQuery intraday (real-time) · Firebase console lags as batch</div>
+        </div>
+
+        <!-- Card 4: Recommendation -->
+        <div class="card">
+            <div class="card-title">Recommendation</div>
+            <ul class="bullet-list">
+                <li>Ship to 100% — no reason to wait until Day 14</li>
+                <li>CR is statistically proven · revenue/user strongly up · no guardrails at risk</li>
+                <li>Proceed with reactivation campaigns — direct inactive users into the new app experience</li>
+                <li>Monitor Baseline AOV anomaly · watch Catalog ATC which has not shown uplift yet</li>
+            </ul>
+            <span class="badge">✓ Ready to ship</span>
+        </div>
+
+    </div>
+
+    <div class="slide-footer">
+        <span>Firebase A/B Test · firebase_exp_12 · iOS · Apr 10–17, 2026 · newDiscoveryAndCatalog</span>
+        <div class="progress-bar">
+            <span>Day 8 of 14</span>
+            <div class="progress-track"><div class="progress-fill"></div></div>
+            <span>57%</span>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

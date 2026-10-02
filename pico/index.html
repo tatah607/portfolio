@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pico Bio - Bestellung</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="logo-title" href="index.html">
+        <svg class="logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 128" role="img" aria-label="Pico Bio Logo">
+          <ellipse cx="100" cy="64" rx="97" ry="58" fill="#107433" transform="rotate(-6, 100, 64)"/>
+          <text x="100" y="64" text-anchor="middle" dominant-baseline="central"
+            font-family="'Fredoka One', 'Signika', sans-serif"
+            font-size="62" fill="#ffffff" font-weight="400" font-style="italic">pico</text>
+        </svg>
+      </a>
+      <button class="cart-button" type="button" disabled>
+        🛒 Warenkorb (0)
+      </button>
+    </header>
+    <main class="page-container">
+      <div class="catalog-layout">
+        <aside class="catalog-sidebar">
+          <div class="catalog-sidebar-header">
+            <h2>Kategorien</h2>
+            <button id="clear-categories" class="btn-link" type="button">
+              Alle löschen
+            </button>
+          </div>
+          <div id="category-filters" class="category-list"></div>
+        </aside>
+        <section class="catalog-content">
+          <div class="catalog-controls">
+            <div class="search-field">
+              <label for="product-search">Produkt suchen</label>
+              <div class="search-input-wrapper">
+                <input
+                  id="product-search"
+                  type="search"
+                  placeholder="Produkt suchen..."
+                />
+                <button
+                  class="search-clear"
+                  type="button"
+                  aria-label="Suche löschen"
+                  disabled
+                >
+                  ×
+                </button>
+              </div>
+            </div>
+            <div class="sort-field">
+              <label for="sort-select">Sortieren nach:</label>
+              <select id="sort-select">
+                <option value="name-asc">Name (A-Z)</option>
+                <option value="name-desc">Name (Z-A)</option>
+                <option value="price-asc">Preis (aufsteigend)</option>
+                <option value="price-desc">Preis (absteigend)</option>
+              </select>
+            </div>
+          </div>
+          <div id="no-results" class="no-results" hidden>
+            Keine Produkte gefunden. Bitte passen Sie Ihre Filter an.
+          </div>
+          <div id="product-grid" class="product-grid"></div>
+        </section>
+      </div>
+    </main>
+    <script src="js/config.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/dataService.js"></script>
+    <script src="js/cartService.js"></script>
+    <script src="js/validation.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="main.js"></script>
+  </body>
+</html>

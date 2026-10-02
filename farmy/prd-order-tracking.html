@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Farmy · PRD: трекинг заказа на главном экране</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    span.underline{text-decoration: underline;}
+    div.column{display: inline-block; vertical-align: top; width: 50%;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="../doc.css" />
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+<a class="back" href="../">← Ко всем работам</a>
+<header id="title-block-header">
+<h1 class="title">Farmy · PRD: трекинг заказа на главном экране</h1>
+</header>
+<h1 id="prd-order-tracking-bottom-sheet--homescreen">PRD: Order Tracking Bottom Sheet — Homescreen</h1>
+<p><strong>Product:</strong> Farmy App <strong>Feature:</strong> Order Tracking Bottom Sheet <strong>Scope:</strong> Farmy Internal Courier + External Courier <strong>Status:</strong> Draft <strong>Date:</strong> 2026-03-19</p>
+<hr />
+<h2 id="1-feature-summary">1. Feature Summary</h2>
+<p>A persistent bottom sheet on the Farmy app homescreen that surfaces the user's upcoming or active delivery at a glance. The sheet can be expanded for full detail or collapsed to a compact summary line. It reflects real-time delivery status, estimated delivery time, and live map visibility depending on where the courier is in the delivery lifecycle.</p>
+<p>The goal is to reduce delivery-related support contacts and increase user confidence by keeping customers passively informed without requiring them to navigate away from the homescreen.</p>
+<hr />
+<h2 id="2-user-goals">2. User Goals</h2>
+<table>
+<thead>
+<tr class="header">
+<th>As a...</th>
+<th>I want to...</th>
+<th>So that...</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Farmy customer</td>
+<td>See my upcoming delivery time without opening the order details</td>
+<td>I can plan my day around my delivery</td>
+</tr>
+<tr class="even">
+<td>Farmy customer</td>
+<td>Know when the courier is en route or has arrived</td>
+<td>I can be ready to receive my order</td>
+</tr>
+<tr class="odd">
+<td>Farmy customer</td>
+<td>Understand whether the time shown is exact or approximate</td>
+<td>I have accurate expectations about my delivery window</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="3-scope">3. Scope</h2>
+<p><strong>In scope</strong></p>
+<ul>
+<li>Farmy Internal Courier deliveries</li>
+<li>External Courier deliveries</li>
+<li>Bottom sheet shown on the app homescreen</li>
+<li>Expanded and collapsed states</li>
+<li>Status-driven display logic</li>
+<li>Multilingual copy (EN, DE, FR)</li>
+</ul>
+<p><strong>Out of scope</strong></p>
+<ul>
+<li>Push notifications</li>
+<li>Order details screen or order history</li>
+<li>Technical implementation and API design (covered in separate tech spec)</li>
+</ul>
+<hr />
+<h2 id="4-business-rules">4. Business Rules</h2>
+<h3 id="41-when-to-show-the-bottom-sheet">4.1 When to Show the Bottom Sheet</h3>
+<p>The bottom sheet visibility is determined by a combination of order status and delivery status.</p>
+<table>
+<thead>
+<tr class="header">
+<th>Order Status</th>
+<th>Delivery Status</th>
+<th>Bottom Sheet Shown?</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Canceled</td>
+<td>Any</td>
+<td>No — hidden entirely</td>
+</tr>
+<tr class="even">
+<td>Complete</td>
+<td><code>unpacked</code></td>
+<td>Yes</td>
+</tr>
+<tr class="odd">
+<td>Complete</td>
+<td><code>pending</code></td>
+<td>Yes</td>
+</tr>
+<tr class="even">
+<td>Complete</td>
+<td><code>en_route</code></td>
+<td>Yes</td>
+</tr>
+<tr class="odd">
+<td>Complete</td>
+<td><code>arrived</code></td>
+<td>Yes</td>
+</tr>
+<tr class="even">
+<td>Complete</td>
+<td><code>shipped</code></td>
+<td>No — order is complete and removed from homescreen</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="42-delivery-status-states">4.2 Delivery Status States</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Delivery Status</th>
+<th>Delivery Phase</th>
+<th>Map Shown?</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>unpacked</code></td>
+<td>Not started</td>
+<td>No</td>
+<td>Time display depends on <code>planned_delivery_time_is_fake</code></td>
+</tr>
+<tr class="even">
+<td><code>pending</code></td>
+<td>Not started</td>
+<td>No</td>
+<td>Time display depends on <code>planned_delivery_time_is_fake</code></td>
+</tr>
+<tr class="odd">
+<td><code>en_route</code></td>
+<td>Active delivery</td>
+<td>Only if courier is assigned</td>
+<td><code>planned_delivery_time_is_fake</code> is always <code>false</code> in this state</td>
+</tr>
+<tr class="even">
+<td><code>arrived</code></td>
+<td>Active delivery</td>
+<td>No</td>
+<td><code>planned_delivery_time_is_fake</code> is always <code>false</code> in this state</td>
+</tr>
+<tr class="odd">
+<td><code>shipped</code></td>
+<td>Delivered</td>
+<td>—</td>
+<td>Bottom sheet is hidden</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Map visibility rule:</strong> map is shown only when delivery status is <code>en_route</code> AND a courier is assigned. Both conditions must be true.</p>
+<hr />
+<h3 id="43-time-display-logic">4.3 Time Display Logic</h3>
+<p>Two fields control how the delivery time is displayed:</p>
+<ul>
+<li><strong><code>planned_delivery_time</code></strong> — the time value to display</li>
+<li><strong><code>planned_delivery_time_is_fake</code></strong> (boolean) — indicates whether the time is exact or approximate</li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th><code>planned_delivery_time_is_fake</code></th>
+<th>Meaning</th>
+<th>What to Show</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>false</code> or <code>nil</code></td>
+<td>Exact delivery time is known</td>
+<td>Show <code>planned_delivery_time</code> as the exact expected arrival</td>
+</tr>
+<tr class="even">
+<td><code>true</code></td>
+<td>Exact time is unknown</td>
+<td>Show <code>planned_delivery_time</code> as the end-of-slot deadline ("before [Time]")</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="44-polling--refresh-interval">4.4 Polling / Refresh Interval</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Condition</th>
+<th>Refresh Interval</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Default (all other states)</td>
+<td>Every 20 minutes</td>
+</tr>
+<tr class="even">
+<td><code>planned_delivery_time_is_fake == false</code> AND <code>planned_delivery_time</code> is today</td>
+<td>Every 1 minute</td>
+</tr>
+</tbody>
+</table>
+<p>The high-frequency polling activates only when both conditions are met simultaneously. The switch itself does not trigger an immediate fetch — the next update still comes after the current 20-minute cycle completes. This is acceptable because these conditions are set early in the morning, well before the delivery window begins, so the lag has no practical impact on the user experience.</p>
+<hr />
+<h3 id="45-copy--text-rules">4.5 Copy / Text Rules</h3>
+<p>All copy is configured on the frontend. Copy varies by two dimensions: <strong>sheet state</strong> (expanded vs. collapsed) and <strong>time type</strong> (exact vs. end-of-slot).</p>
+<h4 id="expanded--exact-time-planned_delivery_time_is_fake--false--nil">Expanded — Exact Time (<code>planned_delivery_time_is_fake = false / nil</code>)</h4>
+<table>
+<thead>
+<tr class="header">
+<th>Language</th>
+<th>Copy</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>EN</td>
+<td><code>[Day] [Date] [Month] at [Time]</code></td>
+</tr>
+<tr class="even">
+<td>DE</td>
+<td><code>[Day] [Date] [Month] gegen [Time] Uhr</code></td>
+</tr>
+<tr class="odd">
+<td>FR</td>
+<td><code>[Day] [Date] [Month] à [Time]</code></td>
+</tr>
+</tbody>
+</table>
+<h4 id="collapsed--exact-time-planned_delivery_time_is_fake--false--nil">Collapsed — Exact Time (<code>planned_delivery_time_is_fake = false / nil</code>)</h4>
+<table>
+<thead>
+<tr class="header">
+<th>Language</th>
+<th>Copy</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>EN</td>
+<td><code>The order is being delivered ~ [Time]</code></td>
+</tr>
+<tr class="even">
+<td>DE</td>
+<td><code>Deine Bestellung wird zugestellt…</code></td>
+</tr>
+<tr class="odd">
+<td>FR</td>
+<td><code>La commande est en train d'être livrée...</code></td>
+</tr>
+</tbody>
+</table>
+<h4 id="expanded--end-of-slot-planned_delivery_time_is_fake--true">Expanded — End of Slot (<code>planned_delivery_time_is_fake = true</code>)</h4>
+<table>
+<thead>
+<tr class="header">
+<th>Language</th>
+<th>Copy</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>EN</td>
+<td><code>[Day] [Date] [Month] before [Time]</code></td>
+</tr>
+<tr class="even">
+<td>DE</td>
+<td><code>[Day] [Date] [Month] vor [Time] Uhr</code></td>
+</tr>
+<tr class="odd">
+<td>FR</td>
+<td><code>[Day] [Date] [Month] avant [Time]</code></td>
+</tr>
+</tbody>
+</table>
+<h4 id="collapsed--end-of-slot-planned_delivery_time_is_fake--true">Collapsed — End of Slot (<code>planned_delivery_time_is_fake = true</code>)</h4>
+<table>
+<thead>
+<tr class="header">
+<th>Language</th>
+<th>Copy</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>EN</td>
+<td><code>Your next delivery [Day] [Date] [Month] before [Time]</code></td>
+</tr>
+<tr class="even">
+<td>DE</td>
+<td><code>Deine nächste Lieferung am [Day] [Date] [Month] vor [Time]</code></td>
+</tr>
+<tr class="odd">
+<td>FR</td>
+<td><code>Ta prochaine livraison est prévue le [jour] [date] [mois] avant [heure]</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="46-late-delivery-handling">4.6 Late Delivery Handling</h3>
+<p>If the actual delivery runs later than <code>planned_delivery_time</code>, the bottom sheet continues to display the original planned time and remains visible in its active state. No special late message is shown. The bottom sheet is only removed once the order reaches <code>shipped</code> status.</p>
+<hr />
+<h2 id="5-decisions">5. Decisions</h2>
+<table>
+<thead>
+<tr class="header">
+<th>#</th>
+<th>Question</th>
+<th>Decision</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1</td>
+<td>Multiple active orders</td>
+<td>Show only the next (soonest) delivery</td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td>API timeout / data unavailable</td>
+<td>Show nothing — hide the bottom sheet</td>
+</tr>
+<tr class="odd">
+<td>3</td>
+<td>App reopen mid-delivery</td>
+<td>Fetch fresh data immediately on reopen</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="6-external-courier--business-rules">6. External Courier — Business Rules</h2>
+<h3 id="61-key-differences-from-farmy-internal-courier">6.1 Key Differences from Farmy Internal Courier</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Topic</th>
+<th>Internal Courier</th>
+<th>External Courier</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Delivery time precision</td>
+<td>Exact time possible</td>
+<td>Always end-of-slot only</td>
+</tr>
+<tr class="even">
+<td><code>planned_delivery_time_is_fake</code></td>
+<td><code>true</code> or <code>false</code></td>
+<td>Always <code>true</code></td>
+</tr>
+<tr class="odd">
+<td>Map</td>
+<td>Yes, when <code>en_route</code> + courier assigned</td>
+<td>Never</td>
+</tr>
+<tr class="even">
+<td>Removal from homescreen</td>
+<td>When status = <code>shipped</code></td>
+<td>When <code>planned_delivery_time</code> has passed</td>
+</tr>
+</tbody>
+</table>
+<h3 id="62-when-to-show-the-bottom-sheet">6.2 When to Show the Bottom Sheet</h3>
+<p>Same order status logic applies: show for <code>complete</code> orders, hide for <code>canceled</code>.</p>
+<p><strong>Removal condition differs:</strong> external courier orders are marked as <code>shipped</code> at 5am the day after the delivery day — this status cannot be used to hide the bottom sheet. Instead, the bottom sheet is removed as soon as <code>planned_delivery_time</code> has passed.</p>
+<table>
+<thead>
+<tr class="header">
+<th>Condition</th>
+<th>Bottom Sheet Shown?</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Order canceled</td>
+<td>No</td>
+</tr>
+<tr class="even">
+<td>Order complete + <code>planned_delivery_time</code> in the future or today</td>
+<td>Yes</td>
+</tr>
+<tr class="odd">
+<td>Order complete + <code>planned_delivery_time</code> has passed</td>
+<td>No — removed from homescreen</td>
+</tr>
+</tbody>
+</table>
+<h3 id="63-time-display-logic">6.3 Time Display Logic</h3>
+<p><code>planned_delivery_time_is_fake</code> is always <code>true</code> for external courier. The time shown is always the end-of-slot deadline ("before [Time]"). Exact-time copy variants do not apply.</p>
+<h3 id="64-map">6.4 Map</h3>
+<p>Never shown for external courier deliveries.</p>
+<h3 id="65-copy--text-rules">6.5 Copy / Text Rules</h3>
+<p>All copy is configured on the frontend. Since <code>planned_delivery_time_is_fake</code> is always <code>true</code>, only the end-of-slot copy applies.</p>
+<h4 id="expanded-bottom-sheet">Expanded Bottom Sheet</h4>
+<table>
+<thead>
+<tr class="header">
+<th>Language</th>
+<th>Copy</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>EN</td>
+<td><code>[Day] [Date] [Month] before [Time]</code></td>
+</tr>
+<tr class="even">
+<td>DE</td>
+<td><code>[Day] [Date] [Month] vor [Time] Uhr</code></td>
+</tr>
+<tr class="odd">
+<td>FR</td>
+<td><code>[Day] [Date] [Month] avant [Time]</code></td>
+</tr>
+</tbody>
+</table>
+<h4 id="collapsed-bottom-sheet">Collapsed Bottom Sheet</h4>
+<table>
+<thead>
+<tr class="header">
+<th>Language</th>
+<th>Copy</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>EN</td>
+<td><code>Your next delivery [Day] [Date] [Month] before [Time]</code></td>
+</tr>
+<tr class="even">
+<td>DE</td>
+<td><code>Deine nächste Lieferung am [Day] [Date] [Month] vor [Time]</code></td>
+</tr>
+<tr class="odd">
+<td>FR</td>
+<td><code>Ta prochaine livraison est prévue le [jour] [date] [mois] avant [heure]</code></td>
+</tr>
+</tbody>
+</table>
+</body>
+</html>

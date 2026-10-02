@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>iOS Homescreen Redesign — A/B Test Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1" integrity="sha384-jb8JQMbMoBUzgWatfe6COACi2ljcDdZQ2OxczGA3bGNeWe+6DChMTBJemed7ZnvJ" crossorigin="anonymous"></script>
+    <style>
+        :root {
+            --bg-primary: #f4f6f9;
+            --bg-card: #ffffff;
+            --bg-header: #1b2a3b;
+            --text-primary: #1b2a3b;
+            --text-secondary: #6c757d;
+            --text-on-dark: #ffffff;
+            --baseline: #4C72B0;
+            --variant: #55A868;
+            --positive: #28a745;
+            --negative: #dc3545;
+            --warning: #fd7e14;
+            --neutral: #6c757d;
+            --gap: 16px;
+            --radius: 10px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.5;
+        }
+
+        .dashboard-container {
+            max-width: 1300px;
+            margin: 0 auto;
+            padding: var(--gap);
+        }
+
+        /* Header */
+        .dashboard-header {
+            background: var(--bg-header);
+            color: var(--text-on-dark);
+            padding: 20px 28px;
+            border-radius: var(--radius);
+            margin-bottom: var(--gap);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .dashboard-header h1 { font-size: 18px; font-weight: 700; }
+        .dashboard-header .meta { font-size: 12px; color: rgba(255,255,255,0.6); margin-top: 4px; }
+
+        .header-right { text-align: right; font-size: 13px; color: rgba(255,255,255,0.8); }
+        .header-right strong { display: block; font-size: 15px; color: #fff; }
+
+        /* Guardrails */
+        .guardrails {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: var(--gap);
+            margin-bottom: var(--gap);
+        }
+
+        .guardrail-card {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            padding: 16px 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.07);
+            border-left: 4px solid var(--neutral);
+            position: relative;
+        }
+
+        .guardrail-card.ok { border-left-color: var(--positive); }
+        .guardrail-card.warn { border-left-color: var(--warning); }
+        .guardrail-card.fail { border-left-color: var(--negative); }
+
+        .guardrail-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.6px; color: var(--text-secondary); margin-bottom: 6px; }
+        .guardrail-values { display: flex; justify-content: space-between; align-items: flex-end; }
+        .guardrail-metric { font-size: 22px; font-weight: 700; }
+        .guardrail-baseline { font-size: 12px; color: var(--text-secondary); }
+        .guardrail-delta { font-size: 13px; font-weight: 600; }
+        .guardrail-delta.pos { color: var(--positive); }
+        .guardrail-delta.neg { color: var(--negative); }
+        .guardrail-threshold { font-size: 11px; color: var(--text-secondary); margin-top: 4px; }
+
+        .status-badge {
+            position: absolute;
+            top: 14px;
+            right: 16px;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-badge.ok { background: #d4edda; color: #155724; }
+        .status-badge.warn { background: #fff3cd; color: #856404; }
+        .status-badge.fail { background: #f8d7da; color: #721c24; }
+
+        /* KPI Row */
+        .kpi-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: var(--gap);
+            margin-bottom: var(--gap);
+        }
+
+        .kpi-card {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            padding: 18px 22px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.07);
+        }
+
+        .kpi-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.6px; color: var(--text-secondary); margin-bottom: 8px; }
+
+        .kpi-compare {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .kpi-variant-block { text-align: center; flex: 1; }
+        .kpi-variant-block:first-child { border-right: 1px solid #f0f0f0; }
+
+        .kpi-variant-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; }
+        .kpi-variant-label.baseline { color: var(--baseline); }
+        .kpi-variant-label.variant { color: var(--variant); }
+
+        .kpi-value { font-size: 22px; font-weight: 700; }
+
+        .kpi-delta {
+            text-align: center;
+            font-size: 13px;
+            font-weight: 600;
+            padding: 4px 0 0;
+            border-top: 1px solid #f0f0f0;
+        }
+
+        .kpi-delta.pos { color: var(--positive); }
+        .kpi-delta.neg { color: var(--negative); }
+        .kpi-delta.neutral { color: var(--neutral); }
+
+        /* Charts */
+        .chart-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--gap);
+            margin-bottom: var(--gap);
+        }
+
+        .chart-row.full { grid-template-columns: 1fr; }
+
+        .chart-container {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            padding: 20px 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.07);
+        }
+
+        .chart-container h3 {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .chart-container .chart-sub {
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+        }
+
+        .chart-container canvas { max-height: 280px; }
+
+        /* Legend */
+        .chart-legend {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 14px;
+        }
+
+        .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; }
+        .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+
+        /* Table */
+        .table-section {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            padding: 20px 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.07);
+            margin-bottom: var(--gap);
+            overflow-x: auto;
+        }
+
+        .table-section h3 { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+        .table-section .chart-sub { font-size: 11px; color: var(--text-secondary); margin-bottom: 14px; }
+
+        .data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+
+        .data-table thead th {
+            text-align: left;
+            padding: 8px 12px;
+            border-bottom: 2px solid #eee;
+            color: var(--text-secondary);
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .data-table tbody td {
+            padding: 9px 12px;
+            border-bottom: 1px solid #f5f5f5;
+        }
+
+        .data-table tbody tr:last-child td { border-bottom: none; }
+        .data-table tbody tr:hover { background: #fafafa; }
+
+        .td-delta { font-weight: 600; }
+        .td-delta.pos { color: var(--positive); }
+        .td-delta.neg { color: var(--negative); }
+        .td-delta.neutral { color: var(--neutral); }
+
+        .screen-tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .screen-tag.primary { background: #e8f4fd; color: #1565c0; }
+        .screen-tag.sanity { background: #f3e5f5; color: #6a1b9a; }
+        .screen-tag.other { background: #f5f5f5; color: #555; }
+
+        /* Footer */
+        .dashboard-footer {
+            text-align: center;
+            font-size: 11px;
+            color: var(--text-secondary);
+            padding: 12px 0;
+        }
+
+        /* Split bar */
+        .split-bar-container { margin-bottom: var(--gap); }
+        .split-bar { height: 8px; border-radius: 4px; display: flex; overflow: hidden; }
+        .split-bar-baseline { background: var(--baseline); }
+        .split-bar-variant { background: var(--variant); }
+        .split-labels { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-secondary); margin-top: 4px; }
+    </style>
+</head>
+<body>
+<div class="dashboard-container">
+
+    <!-- Header -->
+    <div class="dashboard-header">
+        <div>
+            <h1>iOS Homescreen & Product Cards Redesign — A/B Test</h1>
+            <div class="meta">Firebase A/B Testing · Version 6.2.0 · newDiscoveryAndCatalog · 50/50 split</div>
+        </div>
+        <div class="header-right">
+            <strong>Day 10 of 14</strong>
+            Apr 10 – Apr 19, 2026
+        </div>
+    </div>
+
+    <!-- Guardrails -->
+    <div class="guardrails">
+
+        <div class="guardrail-card ok">
+            <span class="status-badge ok">✓ OK</span>
+            <div class="guardrail-label">User CR</div>
+            <div class="guardrail-values">
+                <div>
+                    <div class="guardrail-metric">23.48%</div>
+                    <div class="guardrail-baseline">Baseline: 18.81%</div>
+                </div>
+                <div class="guardrail-delta pos">+24.8% ✓ p=0.011</div>
+            </div>
+            <div class="guardrail-threshold">Stop if &lt; 20.5% — not at risk</div>
+        </div>
+
+        <div class="guardrail-card ok">
+            <span class="status-badge ok">✓ OK</span>
+            <div class="guardrail-label">Revenue / User</div>
+            <div class="guardrail-values">
+                <div>
+                    <div class="guardrail-metric">CHF 46.96</div>
+                    <div class="guardrail-baseline">Baseline: CHF 41.55</div>
+                </div>
+                <div class="guardrail-delta pos">+13.0%</div>
+            </div>
+            <div class="guardrail-threshold">Stop if &lt; CHF 22 — not at risk</div>
+        </div>
+
+        <div class="guardrail-card ok">
+            <span class="status-badge ok">✓ OK</span>
+            <div class="guardrail-label">AOV</div>
+            <div class="guardrail-values">
+                <div>
+                    <div class="guardrail-metric">CHF 200.04</div>
+                    <div class="guardrail-baseline">Baseline: CHF 220.86 ⚠️</div>
+                </div>
+                <div class="guardrail-delta neg">−9.4%</div>
+            </div>
+            <div class="guardrail-threshold">⚠️ Baseline AOV elevated 5 days — large order noise</div>
+        </div>
+
+        <div class="guardrail-card ok">
+            <span class="status-badge ok">✓ OK</span>
+            <div class="guardrail-label">Split Balance</div>
+            <div class="guardrail-values">
+                <div>
+                    <div class="guardrail-metric">50.7 / 49.3</div>
+                    <div class="guardrail-baseline">1,010 vs 984 users</div>
+                </div>
+                <div class="guardrail-delta neutral">Clean</div>
+            </div>
+            <div class="guardrail-threshold">Stop if heavily imbalanced</div>
+        </div>
+
+    </div>
+
+    <!-- KPI Cards -->
+    <div class="kpi-row">
+
+        <div class="kpi-card">
+            <div class="kpi-label">Enrolled Users</div>
+            <div class="kpi-compare">
+                <div class="kpi-variant-block">
+                    <div class="kpi-variant-label baseline">Baseline</div>
+                    <div class="kpi-value">1,010</div>
+                </div>
+                <div class="kpi-variant-block">
+                    <div class="kpi-variant-label variant">Variant A</div>
+                    <div class="kpi-value">984</div>
+                </div>
+            </div>
+            <div class="kpi-delta neutral">50/50 split ✓</div>
+        </div>
+
+        <div class="kpi-card">
+            <div class="kpi-label">Purchases</div>
+            <div class="kpi-compare">
+                <div class="kpi-variant-block">
+                    <div class="kpi-variant-label baseline">Baseline</div>
+                    <div class="kpi-value">190</div>
+                </div>
+                <div class="kpi-variant-block">
+                    <div class="kpi-variant-label variant">Variant A</div>
+                    <div class="kpi-value">231</div>
+                </div>
+            </div>
+            <div class="kpi-delta pos">+21.6% more orders</div>
+        </div>
+
+        <div class="kpi-card">
+            <div class="kpi-label">Total Revenue</div>
+            <div class="kpi-compare">
+                <div class="kpi-variant-block">
+                    <div class="kpi-variant-label baseline">Baseline</div>
+                    <div class="kpi-value" style="font-size:17px;">CHF 41,964</div>
+                </div>
+                <div class="kpi-variant-block">
+                    <div class="kpi-variant-label variant">Variant A</div>
+                    <div class="kpi-value" style="font-size:17px;">CHF 46,208</div>
+                </div>
+            </div>
+            <div class="kpi-delta pos">+10.1% — Variant A clearly ahead</div>
+        </div>
+
+        <div class="kpi-card">
+            <div class="kpi-label">Discovery ATC Users</div>
+            <div class="kpi-compare">
+                <div class="kpi-variant-block">
+                    <div class="kpi-variant-label baseline">Baseline</div>
+                    <div class="kpi-value">89</div>
+                </div>
+                <div class="kpi-variant-block">
+                    <div class="kpi-variant-label variant">Variant A</div>
+                    <div class="kpi-value">123</div>
+                </div>
+            </div>
+            <div class="kpi-delta pos">+38% primary signal ✓</div>
+        </div>
+
+        <div class="kpi-card">
+            <div class="kpi-label">Total ATC Events</div>
+            <div class="kpi-compare">
+                <div class="kpi-variant-block">
+                    <div class="kpi-variant-label baseline">Baseline</div>
+                    <div class="kpi-value">10,282</div>
+                </div>
+                <div class="kpi-variant-block">
+                    <div class="kpi-variant-label variant">Variant A</div>
+                    <div class="kpi-value">9,688</div>
+                </div>
+            </div>
+            <div class="kpi-delta neutral">−5.8% events (Baseline has +2.6% users)</div>
+        </div>
+
+        <div class="kpi-card">
+            <div class="kpi-label">ATC per User</div>
+            <div class="kpi-compare">
+                <div class="kpi-variant-block">
+                    <div class="kpi-variant-label baseline">Baseline</div>
+                    <div class="kpi-value">10.18</div>
+                </div>
+                <div class="kpi-variant-block">
+                    <div class="kpi-variant-label variant">Variant A</div>
+                    <div class="kpi-value">9.84</div>
+                </div>
+            </div>
+            <div class="kpi-delta neutral">flat — not significant (p=0.07)</div>
+        </div>
+
+    </div>
+
+    <!-- Charts Row 1 -->
+    <div class="chart-row">
+
+        <div class="chart-container">
+            <h3>User Conversion Rate by Variant</h3>
+            <div class="chart-sub">Purchasing users / total enrolled users</div>
+            <div class="chart-legend">
+                <div class="legend-item"><div class="legend-dot" style="background:var(--baseline)"></div>Baseline</div>
+                <div class="legend-item"><div class="legend-dot" style="background:var(--variant)"></div>Variant A</div>
+            </div>
+            <canvas id="crChart"></canvas>
+        </div>
+
+        <div class="chart-container">
+            <h3>Revenue Metrics by Variant</h3>
+            <div class="chart-sub">AOV and Revenue/User comparison</div>
+            <div class="chart-legend">
+                <div class="legend-item"><div class="legend-dot" style="background:var(--baseline)"></div>Baseline</div>
+                <div class="legend-item"><div class="legend-dot" style="background:var(--variant)"></div>Variant A</div>
+            </div>
+            <canvas id="revenueChart"></canvas>
+        </div>
+
+    </div>
+
+    <!-- ATC by Screen Chart -->
+    <div class="chart-row full">
+        <div class="chart-container">
+            <h3>Add-to-Cart Events by Screen</h3>
+            <div class="chart-sub">Baseline vs Variant A — primary screens highlighted</div>
+            <div class="chart-legend">
+                <div class="legend-item"><div class="legend-dot" style="background:var(--baseline)"></div>Baseline</div>
+                <div class="legend-item"><div class="legend-dot" style="background:var(--variant)"></div>Variant A</div>
+            </div>
+            <canvas id="atcChart" style="max-height:320px;"></canvas>
+        </div>
+    </div>
+
+    <!-- ATC Table -->
+    <div class="table-section">
+        <h3>Add-to-Cart Detail by Screen</h3>
+        <div class="chart-sub">Apr 10–19, 2026 · iOS only · enrolled users only</div>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Screen</th>
+                    <th>Role</th>
+                    <th>Baseline Events</th>
+                    <th>Baseline Users</th>
+                    <th>Variant A Events</th>
+                    <th>Variant A Users</th>
+                    <th>Δ Events</th>
+                    <th>Δ Users</th>
+                </tr>
+            </thead>
+            <tbody id="atcTableBody"></tbody>
+        </table>
+    </div>
+
+    <div class="dashboard-footer">
+        Last updated: Apr 20, 2026 (morning) · Data source: BigQuery analytics_171289554 · Experiment: iOS Homescreen & Product Cards Redesign
+    </div>
+
+</div>
+
+<script>
+    // ── DATA ──────────────────────────────────────────────────────────────────
+
+    const COLORS = { baseline: '#4C72B0', variant: '#55A868' };
+
+    const atcData = [
+        { screen: 'Catalog',              role: 'primary',  b_events: 4857, b_users: 327, v_events: 3913, v_users: 311 },
+        { screen: 'Search',               role: 'sanity',   b_events: 1750, b_users: 196, v_events: 1856, v_users: 221 },
+        { screen: 'ProductDetails',       role: 'other',    b_events: 1469, b_users: 238, v_events: 1854, v_users: 291 },
+        { screen: 'Cart',                 role: 'other',    b_events: 840,  b_users: 190, v_events: 802,  v_users: 194 },
+        { screen: 'Discovery',            role: 'primary',  b_events: 520,  b_users: 89,  v_events: 690,  v_users: 123 },
+        { screen: 'Filters',              role: 'sanity',   b_events: 238,  b_users: 38,  v_events: 69,   v_users: 15  },
+        { screen: 'KeywordSearchResults', role: 'other',    b_events: 155,  b_users: 38,  v_events: 62,   v_users: 25  },
+        { screen: 'ZipcodePopup',         role: 'other',    b_events: 149,  b_users: 55,  v_events: 132,  v_users: 58  },
+        { screen: 'ProducerDetails',      role: 'other',    b_events: 188,  b_users: 51,  v_events: 167,  v_users: 58  },
+        { screen: 'Review',               role: 'other',    b_events: 109,  b_users: 14,  v_events: 116,  v_users: 18  },
+    ];
+
+    // ── CR CHART ──────────────────────────────────────────────────────────────
+
+    new Chart(document.getElementById('crChart').getContext('2d'), {
+        type: 'bar',
+        data: {
+            labels: ['User CR (%)', 'Purchasing Users', 'Total Users'],
+            datasets: [
+                {
+                    label: 'Baseline',
+                    data: [18.81, 190, 1010],
+                    backgroundColor: COLORS.baseline + 'CC',
+                    borderColor: COLORS.baseline,
+                    borderWidth: 1,
+                    borderRadius: 4,
+                },
+                {
+                    label: 'Variant A',
+                    data: [23.48, 231, 984],
+                    backgroundColor: COLORS.variant + 'CC',
+                    borderColor: COLORS.variant,
+                    borderWidth: 1,
+                    borderRadius: 4,
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: ctx => {
+                            const val = ctx.parsed.y;
+                            if (ctx.dataIndex === 0) return `${ctx.dataset.label}: ${val}%`;
+                            return `${ctx.dataset.label}: ${val}`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: { grid: { display: false } },
+                y: { beginAtZero: true }
+            }
+        }
+    });
+
+    // ── REVENUE CHART ─────────────────────────────────────────────────────────
+
+    new Chart(document.getElementById('revenueChart').getContext('2d'), {
+        type: 'bar',
+        data: {
+            labels: ['AOV (CHF)', 'Revenue/User (CHF)', 'Total Revenue (CHF ÷ 100)'],
+            datasets: [
+                {
+                    label: 'Baseline',
+                    data: [220.86, 41.55, 419.64],
+                    backgroundColor: COLORS.baseline + 'CC',
+                    borderColor: COLORS.baseline,
+                    borderWidth: 1,
+                    borderRadius: 4,
+                },
+                {
+                    label: 'Variant A',
+                    data: [200.04, 46.96, 462.08],
+                    backgroundColor: COLORS.variant + 'CC',
+                    borderColor: COLORS.variant,
+                    borderWidth: 1,
+                    borderRadius: 4,
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: ctx => {
+                            const val = ctx.parsed.y;
+                            if (ctx.dataIndex === 2) return `${ctx.dataset.label}: CHF ${(val * 100).toFixed(0)}`;
+                            return `${ctx.dataset.label}: CHF ${val.toFixed(2)}`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: { grid: { display: false } },
+                y: { beginAtZero: true }
+            }
+        }
+    });
+
+    // ── ATC BY SCREEN CHART ───────────────────────────────────────────────────
+
+    const atcScreens = atcData.map(d => d.screen);
+    const atcBaseline = atcData.map(d => d.b_events);
+    const atcVariant  = atcData.map(d => d.v_events);
+
+    // Color bars by role
+    const bgBaseline = atcData.map(d =>
+        d.role === 'primary' ? COLORS.baseline : COLORS.baseline + '88'
+    );
+    const bgVariant = atcData.map(d =>
+        d.role === 'primary' ? COLORS.variant : COLORS.variant + '88'
+    );
+
+    new Chart(document.getElementById('atcChart').getContext('2d'), {
+        type: 'bar',
+        data: {
+            labels: atcScreens,
+            datasets: [
+                {
+                    label: 'Baseline',
+                    data: atcBaseline,
+                    backgroundColor: bgBaseline,
+                    borderColor: COLORS.baseline,
+                    borderWidth: 1,
+                    borderRadius: 3,
+                },
+                {
+                    label: 'Variant A',
+                    data: atcVariant,
+                    backgroundColor: bgVariant,
+                    borderColor: COLORS.variant,
+                    borderWidth: 1,
+                    borderRadius: 3,
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y} events`
+                    }
+                }
+            },
+            scales: {
+                x: { grid: { display: false } },
+                y: { beginAtZero: true, title: { display: true, text: 'ATC Events', font: { size: 11 } } }
+            }
+        }
+    });
+
+    // ── ATC TABLE ─────────────────────────────────────────────────────────────
+
+    const roleLabel = { primary: 'Primary signal', sanity: 'Sanity check', other: 'Other' };
+    const roleClass = { primary: 'primary', sanity: 'sanity', other: 'other' };
+
+    const tbody = document.getElementById('atcTableBody');
+
+    atcData.forEach(row => {
+        const deltaEvents = ((row.v_events - row.b_events) / row.b_events * 100).toFixed(0);
+        const deltaUsers  = ((row.v_users  - row.b_users)  / row.b_users  * 100).toFixed(0);
+        const dEvClass = deltaEvents > 0 ? 'pos' : deltaEvents < 0 ? 'neg' : 'neutral';
+        const dUsClass = deltaUsers  > 0 ? 'pos' : deltaUsers  < 0 ? 'neg' : 'neutral';
+        const sign = v => v > 0 ? `+${v}%` : `${v}%`;
+
+        tbody.innerHTML += `
+            <tr>
+                <td><strong>${row.screen}</strong></td>
+                <td><span class="screen-tag ${roleClass[row.role]}">${roleLabel[row.role]}</span></td>
+                <td>${row.b_events.toLocaleString()}</td>
+                <td>${row.b_users}</td>
+                <td>${row.v_events.toLocaleString()}</td>
+                <td>${row.v_users}</td>
+                <td class="td-delta ${dEvClass}">${sign(deltaEvents)}</td>
+                <td class="td-delta ${dUsClass}">${sign(deltaUsers)}</td>
+            </tr>
+        `;
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pico Bio - Warenkorb</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="logo-title" href="index.html">
+        <svg class="logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 128" role="img" aria-label="Pico Bio Logo">
+          <ellipse cx="100" cy="64" rx="97" ry="58" fill="#107433" transform="rotate(-6, 100, 64)"/>
+          <text x="100" y="64" text-anchor="middle" dominant-baseline="central"
+            font-family="'Fredoka One', 'Signika', sans-serif"
+            font-size="62" fill="#ffffff" font-weight="400" font-style="italic">pico</text>
+        </svg>
+      </a>
+      <button class="cart-button" type="button" disabled>
+        🛒 Warenkorb (0)
+      </button>
+    </header>
+    <main class="page-container">
+      <section class="cart-page">
+        <h1>Warenkorb</h1>
+        <div class="cart-layout">
+          <div id="cart-items" class="cart-items"></div>
+          <aside class="cart-summary">
+            <div class="cart-total">
+              Gesamt: <span id="cart-total-amount">CHF 0.00</span>
+            </div>
+            <p class="price-disclaimer">Die angezeigten Preise sind indikative Basispreise. Der endgültige Preis wird auf der Rechnung ausgewiesen.</p>
+            <button class="btn-primary btn-cta" type="button">Zur Bestellung</button>
+          </aside>
+        </div>
+        <div class="cart-summary cart-summary-bottom">
+          <div class="cart-total">
+            Gesamt: <span id="cart-total-amount-bottom">CHF 0.00</span>
+          </div>
+          <p class="price-disclaimer">Die angezeigten Preise sind indikative Basispreise. Der endgültige Preis wird auf der Rechnung ausgewiesen.</p>
+          <button class="btn-primary btn-cta" type="button">Zur Bestellung</button>
+        </div>
+      </section>
+    </main>
+    <script src="js/config.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/dataService.js"></script>
+    <script src="js/cartService.js"></script>
+    <script src="js/validation.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="cart.js"></script>
+  </body>
+</html>

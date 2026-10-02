@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pico Bio - Bestellbestätigung</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="logo-title" href="index.html">
+        <svg class="logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 128" role="img" aria-label="Pico Bio Logo">
+          <ellipse cx="100" cy="64" rx="97" ry="58" fill="#107433" transform="rotate(-6, 100, 64)"/>
+          <text x="100" y="64" text-anchor="middle" dominant-baseline="central"
+            font-family="'Fredoka One', 'Signika', sans-serif"
+            font-size="62" fill="#ffffff" font-weight="400" font-style="italic">pico</text>
+        </svg>
+      </a>
+      <button class="cart-button" type="button" disabled>
+        🛒 Warenkorb (0)
+      </button>
+    </header>
+    <main class="page-container">
+      <section class="confirmation-page">
+        <div class="confirmation-hero">
+          <div class="success-icon">✓</div>
+          <h1>BESTELLUNG ERFOLGREICH AUFGEGEBEN!</h1>
+          <button id="order-number" class="order-number" type="button"></button>
+          <p class="order-hint">Nutzen Sie diese Nummer für Rückfragen</p>
+        </div>
+
+        <div class="confirmation-grid">
+          <div class="confirmation-card">
+            <h2>Ihre Bestelldaten</h2>
+            <div id="order-details" class="order-details"></div>
+            <h2>Bestellübersicht</h2>
+            <div id="order-items" class="order-items"></div>
+            <div class="order-total">
+              Gesamt: <span id="order-total-amount">CHF 0.00</span>
+            </div>
+          </div>
+          <div class="confirmation-card">
+            <h2>Wie geht es weiter?</h2>
+            <ul class="next-steps">
+              <li>Ihre Bestellung wird innerhalb von 24 Stunden bearbeitet</li>
+              <li>Sie erhalten eine Bestätigung per E-Mail</li>
+            </ul>
+            <p class="contact-heading">Fragen? Kontaktieren Sie uns:</p>
+            <p class="contact-info">☎ Tel: 044 745 70 20</p>
+            <p class="contact-info">✉ E-Mail: info@pico.ch</p>
+          </div>
+        </div>
+
+        <div class="confirmation-actions">
+          <a class="btn-primary" href="index.html">Zurück zum Katalog</a>
+        </div>
+      </section>
+    </main>
+    <script src="js/config.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/dataService.js"></script>
+    <script src="js/cartService.js"></script>
+    <script src="js/validation.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="confirmation.js"></script>
+  </body>
+</html>

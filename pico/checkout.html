@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pico Bio - Bestellung abschliessen</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="logo-title" href="index.html">
+        <svg class="logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 128" role="img" aria-label="Pico Bio Logo">
+          <ellipse cx="100" cy="64" rx="97" ry="58" fill="#107433" transform="rotate(-6, 100, 64)"/>
+          <text x="100" y="64" text-anchor="middle" dominant-baseline="central"
+            font-family="'Fredoka One', 'Signika', sans-serif"
+            font-size="62" fill="#ffffff" font-weight="400" font-style="italic">pico</text>
+        </svg>
+      </a>
+      <button class="cart-button" type="button" disabled>
+        🛒 Warenkorb (0)
+      </button>
+    </header>
+    <main class="page-container">
+      <section class="checkout-page">
+        <h1>Bestellung abschliessen</h1>
+        <div class="checkout-layout">
+          <form id="checkout-form" class="checkout-form" novalidate>
+            <div class="form-card">
+              <h2>Ihre Angaben</h2>
+              <div class="form-field">
+                <label for="customer-id">Kunden-ID*</label>
+                <input
+                  id="customer-id"
+                  name="customerId"
+                  type="text"
+                  placeholder="Ihre Pico Kunden-ID"
+                  required
+                />
+                <p class="field-help">
+                  Ihre ID finden Sie auf vorherigen Rechnungen
+                </p>
+                <p class="field-error" data-error-for="customerId"></p>
+              </div>
+              <div class="form-field">
+                <label for="company-name">Firmenname oder Name*</label>
+                <input
+                  id="company-name"
+                  name="companyName"
+                  type="text"
+                  placeholder="Ihr Firmenname"
+                  required
+                  minlength="2"
+                />
+                <p class="field-error" data-error-for="companyName"></p>
+              </div>
+              <div class="form-field">
+                <label for="email">E-Mail-Adresse*</label>
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  placeholder="ihre.email@firma.ch"
+                  required
+                />
+                <p class="field-help">
+                  Bestellbestätigung wird hierhin gesendet
+                </p>
+                <p class="field-error" data-error-for="email"></p>
+              </div>
+              <div class="form-field">
+                <label for="notes"
+                  >Besondere Anweisungen oder Bemerkungen (Optional)</label
+                >
+                <textarea
+                  id="notes"
+                  name="notes"
+                  rows="4"
+                  maxlength="500"
+                  placeholder="z.B. Lieferhinweise"
+                ></textarea>
+              </div>
+            </div>
+          </form>
+          <aside class="order-summary">
+            <h2>Bestellübersicht</h2>
+            <div class="summary-card">
+              <div id="summary-count" class="summary-count">0 Artikel</div>
+              <div id="summary-items" class="summary-items"></div>
+              <div class="summary-total">
+                Gesamt: <span id="summary-total-amount">CHF 0.00</span>
+              </div>
+            </div>
+            <div class="summary-actions">
+              <button
+                id="submit-order"
+                class="btn-primary btn-cta"
+                type="submit"
+                form="checkout-form"
+                disabled
+              >
+                Bestellung senden
+              </button>
+            </div>
+          </aside>
+        </div>
+      </section>
+    </main>
+    <script src="js/config.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/dataService.js"></script>
+    <script src="js/cartService.js"></script>
+    <script src="js/validation.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="checkout.js"></script>
+  </body>
+</html>
